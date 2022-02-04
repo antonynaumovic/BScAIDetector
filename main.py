@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
-import configparser
+from imageGlobDetector import *
 
-def main_gui():
+def main():
     logsMessage = ""
     layout = [
         [sg.Text("Please Select Images and Masks")],
@@ -45,3 +45,7 @@ def main_gui():
             break
 
     window.close()
+
+if __name__ == "__main__":
+    config_setup()
+    main()
