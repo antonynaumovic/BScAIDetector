@@ -1,13 +1,15 @@
 from imageai.Detection.Custom import DetectionModelTrainer
 
 
-def train_model(imagePath, imageLabels, batchSize, numExperiments):
+def train_model(image_path, image_labels, batch_size, num_experiments, pre_train_model):
+    if "/" not in image_labels and "\\" not in image_labels:
+        image_labels = image_labels.split()
 
-    imageTrainer = DetectionModelTrainer()
-    imageTrainer.setModelTypeAsYOLOv3()
-    imageTrainer.setDataDirectory(data_directory="")
-
-    imageTrainer.setTrainConfig(object_names_array=["person hardhat"], batch_size=4, num_experiments=20,
-                                train_from_pretrained_model="yolo.h5")
-
-    imageTrainer.trainModel()
+    print(type(image_labels))
+    image_trainer = DetectionModelTrainer()
+    image_trainer.setModelTypeAsYOLOv3()
+    image_trainer.setDataDirectory(data_directory=image_path)
+    image_trainer.setTrainConfig(object_names_array=image_labels, batch_size=batch_size,
+                                 num_experiments=num_experiments,
+                                 train_from_pretrained_model=pre_train_model)
+    image_trainer.trainModel()

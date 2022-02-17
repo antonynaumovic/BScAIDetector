@@ -2,7 +2,8 @@ import numpy as np
 import os
 import cv2
 import glob
-import configparser
+import pascal_voc_writer
+from pathlib import Path
 
 
 def show_image(image):
@@ -22,36 +23,6 @@ def verify_images(image_array, mask_path, threshold):
     return image_array
 
 
-def set_config(render_path, mask_path, output_path):
-    config = configparser.ConfigParser()
-    with open("cookies.ini", "w+") as ini:
-        config.add_section('paths')
-        config.set('paths', 'image', render_path)
-        config.set('paths', 'mask', mask_path)
-        config.set('paths', 'output', output_path)
-        config.write(ini)
-
-
-def get_config():
-    config = configparser.ConfigParser()
-    config.read('cookies.ini')
-    images_path = config['paths']['image']
-    mask_path = config['paths']['mask']
-    output_path = config['paths']['output']
-    return images_path, mask_path, output_path
-
-
-def config_setup():
-    config = configparser.ConfigParser()
-    with open("cookies.ini", "r+") as ini:
-        if len(ini.readlines()) == 0:
-            config.add_section('paths')
-            config.set('paths', 'image', '')
-            config.set('paths', 'mask', '')
-            config.set('paths', 'output', '')
-            config.write(ini)
-
-
 def get_images_from_path(image_path):
     renders = []
     for foundImage in glob.glob(f'{image_path}/*.png'):
@@ -59,7 +30,7 @@ def get_images_from_path(image_path):
     return renders
 
 
-def process_image(render_path, mask_path, output_path):
+def process_image(render_path, mask_path, output_path, image_label):
     im = cv2.imread(mask_path)
     image_render = cv2.imread(render_path)
     image_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
@@ -68,17 +39,26 @@ def process_image(render_path, mask_path, output_path):
     areas = [cv2.contourArea(cont) for cont in contours]
     max_index = np.argmax(areas)
     cnt = contours[max_index]
-    x,y,w,h = cv2.boundingRect(cnt)
-    crop_img = image_render[y:y + h, x:x + w]
-    cv2.imwrite(output_path + "/" + os.path.basename(render_path), crop_img)
+    x, y, w, h = cv2.boundingRect(cnt)
+    # crop_img = image_render[y:y + h, x:x + w]
+    height, width, extra = im.shape
+    final_img_output = output_path + "/" + os.path.basename(render_path)
+    cv2.imwrite(output_path + "/" + os.path.basename(render_path), image_render, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+    writer = pascal_voc_writer.Writer(final_img_output, height, width)
+    if x > w:
+        x, w = w, x
+    if y > h:
+        y, h = h, y
+    writer.addObject(image_label, w, h, x, y)
+    xml_output_path = str(Path(output_path).parent.absolute().resolve())
+    writer.save(xml_output_path + "/annotations/" + os.path.splitext(os.path.basename(render_path))[0] + ".xml")
 
 
 def verify_image(mask_path, threshold):
     img = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
     white_pixels = np.sum(img == 255)
-    total_pixels = img.shape[0]*img.shape[1]
-    white_percent = (white_pixels/total_pixels) * 100
+    total_pixels = img.shape[0] * img.shape[1]
+    white_percent = (white_pixels / total_pixels) * 100
     if white_percent < threshold:
         return False
     return True
-
