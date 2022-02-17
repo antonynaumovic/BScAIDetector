@@ -82,7 +82,13 @@ def main():
         if event == "Compress":
             window['-PROGRESS-'].UpdateBar(0)
             image_path = values["-IMAGES-"]
-
+            progress = 0
+            images = get_images_from_path(image_path)
+            for image in images:
+                compress_image(image_path + "/"+image)
+                progress += 1 / len(images) * 100
+                window['-PROGRESS-'].UpdateBar(progress)
+            window['-PROGRESS-'].UpdateBar(0)
         if event == "Process":
             window['-PROGRESS-'].UpdateBar(0)
             image_path = values["-IMAGES-"]
@@ -116,6 +122,7 @@ def main():
                 process_image(image_path + "/" + image, mask_path + "/" + image, out_path, values["-CURLABEL-"])
                 window['-PROGRESS-'].UpdateBar(progress)
                 imageIter += 1
+            window['-PROGRESS-'].UpdateBar(0)
 
         if event == "Exit" or event == Sg.WIN_CLOSED:
             break

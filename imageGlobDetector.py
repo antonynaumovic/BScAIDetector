@@ -30,6 +30,11 @@ def get_images_from_path(image_path):
     return renders
 
 
+def compress_image(image_path):
+    img = cv2.imread(image_path)
+    cv2.imwrite(image_path, img, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+
+
 def process_image(render_path, mask_path, output_path, image_label):
     im = cv2.imread(mask_path)
     image_render = cv2.imread(render_path)
@@ -43,11 +48,11 @@ def process_image(render_path, mask_path, output_path, image_label):
     # crop_img = image_render[y:y + h, x:x + w]
     height, width, extra = im.shape
     final_img_output = output_path + "/" + os.path.basename(render_path)
-    cv2.imwrite(output_path + "/" + os.path.basename(render_path), image_render, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+    cv2.imwrite(output_path + "/" + os.path.basename(render_path), image_render)
     writer = pascal_voc_writer.Writer(final_img_output, height, width)
-    if x > w:
+    if w > x:
         x, w = w, x
-    if y > h:
+    if h > y:
         y, h = h, y
     writer.addObject(image_label, w, h, x, y)
     xml_output_path = str(Path(output_path).parent.absolute().resolve())
