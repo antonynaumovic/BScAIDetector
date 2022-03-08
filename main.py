@@ -3,7 +3,7 @@ import math
 import random
 from imageGlobDetector import *
 from config import *
-from imageTrainer import *
+#from imageTrainer import *
 
 
 def main():

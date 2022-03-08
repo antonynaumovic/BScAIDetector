@@ -49,14 +49,11 @@ def process_image(render_path, mask_path, output_path, image_label):
     height, width, extra = im.shape
     final_img_output = output_path + "/" + os.path.basename(render_path)
     cv2.imwrite(output_path + "/" + os.path.basename(render_path), image_render)
-    writer = pascal_voc_writer.Writer(final_img_output, height, width)
-    if w > x:
-        x, w = w, x
-    if h > y:
-        y, h = h, y
-    writer.addObject(image_label, w, h, x, y)
-    xml_output_path = str(Path(output_path).parent.absolute().resolve())
-    writer.save(xml_output_path + "/annotations/" + os.path.splitext(os.path.basename(render_path))[0] + ".xml")
+    cv2.imwrite(output_path + "/masks/" + os.path.basename(render_path), im)
+    #writer = pascal_voc_writer.Writer(final_img_output, height, width)
+    #writer.addObject(image_label, x, y, x+w, y+h)
+    #xml_output_path = str(Path(output_path).parent.absolute().resolve())
+    #writer.save(xml_output_path + "/annotations/" + os.path.splitext(os.path.basename(render_path))[0] + ".xml")
 
 
 def verify_image(mask_path, threshold):
